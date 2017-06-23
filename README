@@ -1,4 +1,17 @@
 For systemd-bootchart, several proc debug interfaces are required in the kernel config:
-  CONFIG_SCHEDSTATS
+  CONFIG_SCHEDSTATS  (for /proc/<pid>/schedstat)
+  CONFIG_VM_EVENT_COUNTERS (for /proc/vmstat)
 below is optional, for additional info:
-  CONFIG_SCHED_DEBUG
+  CONFIG_SCHED_DEBUG (for /proc/<pid>/sched)
+
+Files used:
+
+  /proc/vmstat
+  /proc/schedstat
+  /proc/sys/kernel/random/entropy_avail
+  /proc/<pid>/schedstat
+  /proc/<pid>/sched
+  /proc/<pid>/stat
+  /proc/<pid>/task
+  /proc/<pid>/task/<tid>/schedstat
+  /proc/<pid>/smaps
