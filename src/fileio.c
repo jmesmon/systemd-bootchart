@@ -18,6 +18,7 @@
 ***/
 
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -123,6 +124,25 @@ int read_full_stream(FILE *f, char **contents, size_t *size) {
                 *size = l;
 
         return 0;
+}
+
+int read_full_file_at(int dfd, const char *fn, char **contents, size_t *size) {
+        _cleanup_fclose_ FILE *f = NULL;
+        _cleanup_close_ int fd = -1;
+
+        assert(fn);
+        assert(contents);
+
+        fd = openat(dfd, fn, O_RDONLY|O_CLOEXEC);
+        if (fd == -1)
+                return -errno;
+
+        f = fdopen(fd, "re");
+        if (!f)
+                return -errno;
+        fd = -1;
+
+        return read_full_stream(f, contents, size);
 }
 
 int read_full_file(const char *fn, char **contents, size_t *size) {

@@ -190,7 +190,7 @@ vmstat_next:
         }
 
         /* Parse "/proc/schedstat" for overall CPU utilization */
-        r = read_full_file("/proc/schedstat", &buf_schedstat, NULL);
+        r = read_full_file_at(procfd, "schedstat", &buf_schedstat, NULL);
         if (r < 0)
             return log_error_errno(r, "Unable to read schedstat: %m");
 

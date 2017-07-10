@@ -33,6 +33,7 @@ typedef enum {
 
 int read_one_line_file(const char *fn, char **line);
 int read_full_file(const char *fn, char **contents, size_t *size);
+int read_full_file_at(int dfd, const char *fn, char **contents, size_t *size);
 int read_full_stream(FILE *f, char **contents, size_t *size);
 
 int parse_env_file(const char *fname, const char *separator, ...) _sentinel_;
