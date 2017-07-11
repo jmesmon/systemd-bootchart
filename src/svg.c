@@ -31,6 +31,7 @@
 #include "alloc-util.h"
 #include "architecture.h"
 #include "bootchart.h"
+#include "bootchart-args.h"
 #include "fd-util.h"
 #include "fileio.h"
 #include "list.h"

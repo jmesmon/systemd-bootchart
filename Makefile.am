@@ -175,20 +175,34 @@ libutils_la_CFLAGS = \
 libutils_la_LIBADD = \
 	$(LIBSYSTEMD_LIBS)
 
-noinst_LTLIBRARIES = libutils.la
-
-#####################################################
-
-systemd_bootchart_SOURCES = \
-	src/bootchart.c \
-	src/bootchart.h \
+libbootchart_la_SOURCES = \
+	src/bootchart-args.c \
+	src/bootchart-args.h \
+	src/sample.c \
+	src/sample.h \
 	src/store.c \
 	src/store.h \
 	src/svg.c \
 	src/svg.h
 
+libbootchart_la_CFLAGS = \
+	$(AM_CFLAGS) \
+	$(LIBSYSTEMD_CFLAGS)
+
+libbootchart_la_LIBADD = \
+	libutils.la \
+	$(LIBSYSTEMD_LIBS)
+
+noinst_LTLIBRARIES = libutils.la libbootchart.la
+
+#####################################################
+
+systemd_bootchart_SOURCES = \
+	src/bootchart.c \
+	src/bootchart.h
+
 systemd_bootchart_LDADD = \
-	libutils.la
+	libbootchart.la
 
 #####################################################
 

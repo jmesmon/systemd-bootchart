@@ -48,6 +48,7 @@
 #include <systemd/sd-journal.h>
 
 #include "alloc-util.h"
+#include "bootchart-args.h"
 #include "bootchart.h"
 #include "conf-parser.h"
 #include "def.h"
@@ -59,6 +60,7 @@
 #include "macro.h"
 #include "parse-util.h"
 #include "path-util.h"
+#include "sample.h"
 #include "store.h"
 #include "string-util.h"
 #include "strxcpyx.h"
@@ -66,30 +68,6 @@
 #include "time-util.h"
 
 static int exiting = 0;
-
-#define DEFAULT_SAMPLES_LEN 500
-#define DEFAULT_HZ 25.0
-#define DEFAULT_SCALE_X 100.0 /* 100px = 1sec */
-#define DEFAULT_SCALE_Y 20.0  /* 16px = 1 process bar */
-#define DEFAULT_INIT ROOTLIBEXECDIR "/systemd"
-#define DEFAULT_OUTPUT "/run/log"
-
-/* graph defaults */
-bool arg_entropy = false;
-bool arg_initcall = true;
-bool arg_relative = false;
-bool arg_filter = true;
-bool arg_show_cmdline = false;
-bool arg_show_cgroup = false;
-bool arg_pss = false;
-bool arg_percpu = false;
-int arg_samples_len = DEFAULT_SAMPLES_LEN; /* we record len+1 (1 start sample) */
-double arg_hz = DEFAULT_HZ;
-double arg_scale_x = DEFAULT_SCALE_X;
-double arg_scale_y = DEFAULT_SCALE_Y;
-
-char arg_init_path[PATH_MAX] = DEFAULT_INIT;
-char arg_output_path[PATH_MAX] = DEFAULT_OUTPUT;
 
 static void signal_handler(int sig) {
         exiting = 1;
@@ -322,7 +300,6 @@ int main(int argc, char *argv[]) {
         int overrun = 0;
         time_t t = 0;
         int r, samples;
-        struct ps_struct *ps;
         struct list_sample_data *head;
         struct sigaction sig = {
                 .sa_handler = signal_handler,
@@ -466,13 +443,7 @@ int main(int argc, char *argv[]) {
         }
 
         /* do some cleanup, close fd's */
-        ps = ps_first;
-        while (ps->next_running) {
-                ps = ps->next_running;
-                ps->schedstat = safe_close(ps->schedstat);
-                ps->sched = safe_close(ps->sched);
-                ps->smaps = safe_fclose(ps->smaps);
-        }
+        ps_struct_close(ps_first);
 
         if (!of) {
                 t = time(NULL);
@@ -504,35 +475,9 @@ int main(int argc, char *argv[]) {
                 return EXIT_FAILURE;
 
         /* nitpic cleanups */
-        ps = ps_first->next_ps;
-        while (ps->next_ps) {
-                struct ps_struct *old;
+        ps_struct_free(ps_first);
 
-                old = ps;
-                old->sample = ps->first;
-                ps = ps->next_ps;
-                while (old->sample->next) {
-                        struct ps_sched_struct *oldsample = old->sample;
-
-                        old->sample = old->sample->next;
-                        free(oldsample);
-                }
-                free(old->cgroup);
-                free(old->sample);
-                free(old);
-        }
-
-        free(ps->cgroup);
-        free(ps->sample);
-        free(ps);
-
-        sampledata = head;
-        while (sampledata->link_prev) {
-                struct list_sample_data *old_sampledata = sampledata;
-                sampledata = sampledata->link_prev;
-                free(old_sampledata);
-        }
-        free(sampledata);
+        sampledata_free(head);
 
         /* don't complain when overrun once, happens most commonly on 1st sample */
         if (overrun > 1)
