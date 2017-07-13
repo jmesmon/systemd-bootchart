@@ -290,7 +290,7 @@ int main(int argc, char *argv[]) {
         _cleanup_fclose_ FILE *of = NULL;
         _cleanup_close_ int sysfd = -1;
         int schfd;
-        struct ps_struct *ps_first;
+        _cleanup_ps_struct_ struct ps_struct *ps_first;
         double graph_start;
         double log_start;
         double interval;
@@ -478,11 +478,6 @@ int main(int argc, char *argv[]) {
         r = do_journal_append(output_file);
         if (r < 0)
                 return EXIT_FAILURE;
-
-        /* nitpic cleanups */
-        ps_struct_free(ps_first);
-
-        sampledata_free(head);
 
         /* don't complain when overrun once, happens most commonly on 1st sample */
         if (overrun > 1)

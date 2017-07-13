@@ -3,9 +3,14 @@
 
 #include <stdlib.h>
 
-void ps_struct_free(struct ps_struct *ps_first) {
-        /* nitpic cleanups */
-        struct ps_struct *ps = ps_first->next_ps;
+void *ps_struct_free(struct ps_struct *ps_first) {
+        struct ps_struct *ps;
+        if (!ps_first)
+                return NULL;
+
+        ps_struct_close(ps_first);
+
+        ps = ps_first->next_ps;
         while (ps->next_ps) {
                 struct ps_struct *old;
 
@@ -28,15 +33,20 @@ void ps_struct_free(struct ps_struct *ps_first) {
         free(ps);
 
         free(ps_first);
+        return NULL;
 }
 
-void sampledata_free(struct list_sample_data *sampledata) {
+void *sampledata_free(struct list_sample_data *sampledata) {
+        if (!sampledata)
+                return NULL;
+
         while (sampledata->link_prev) {
                 struct list_sample_data *old_sampledata = sampledata;
                 sampledata = sampledata->link_prev;
                 free(old_sampledata);
         }
         free(sampledata);
+        return NULL;
 }
 
 void ps_struct_close(struct ps_struct *ps_first) {
