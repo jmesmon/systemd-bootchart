@@ -208,6 +208,18 @@ systemd_bootchart_LDADD = \
 
 #####################################################
 
+test_sample_2_SOURCES = tests/sample-2/test.c
+test_sample_2_LDADD = libbootchart.la
+
+test_fs_SOURCES = tests/fs.c tests/test.c
+test_fs_LDADD = libbootchart.la
+
+test_fs2_SOURCES = tests/fs2.c tests/test.c
+test_fs2_LDADD = libbootchart.la
+
+check_PROGRAMS = test-sample-2 test-fs test-fs2
+TESTS = $(check_PROGRAMS) tests/run
+
 substitutions = \
 	'|rootlibexecdir=$(rootlibexecdir)|'
 

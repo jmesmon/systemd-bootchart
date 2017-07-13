@@ -1,0 +1,11 @@
+#! /bin/sh
+d=
+cleanup() {
+        if [ -n "$d" ]; then
+                d=
+                rm -rf "$d"
+        fi
+}
+trap cleanup EXIT
+d=`mktemp -d`
+./systemd-bootchart -o "$d" -n 10 -r
