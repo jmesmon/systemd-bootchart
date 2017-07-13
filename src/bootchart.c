@@ -54,6 +54,7 @@
 #include "def.h"
 #include "fd-util.h"
 #include "fileio.h"
+#include "fs.h"
 #include "io-util.h"
 #include "list.h"
 #include "log.h"
@@ -305,6 +306,8 @@ int main(int argc, char *argv[]) {
                 .sa_handler = signal_handler,
         };
         bool has_procfs = false;
+        _cleanup_free_ char *schedstats_path = NULL;
+        _cleanup_free_ char *vmstat_path = NULL;
 
         parse_conf();
 
@@ -328,7 +331,8 @@ int main(int argc, char *argv[]) {
         }
         argv[0][0] = '@';
 
-        schfd = open("/proc/sys/kernel/sched_schedstats", O_WRONLY);
+        schedstats_path = strjoin(procfs_mountpoint(), "/sys/kernel/sched_schedstats", NULL);
+        schfd = open(schedstats_path, O_WRONLY);
         if (schfd >= 0) {
                 write(schfd, "1\n", 2);
                 close(schfd);
@@ -366,7 +370,8 @@ int main(int argc, char *argv[]) {
                 return EXIT_FAILURE;
         }
 
-        has_procfs = access("/proc/vmstat", F_OK) == 0;
+        vmstat_path = strjoin(procfs_mountpoint(), "/vmstat", NULL);
+        has_procfs = access(vmstat_path, F_OK) == 0;
 
         LIST_HEAD_INIT(head);
 
@@ -387,7 +392,7 @@ int main(int argc, char *argv[]) {
                 sampledata->counter = samples;
 
                 if (sysfd < 0)
-                        sysfd = open("/sys", O_RDONLY|O_CLOEXEC);
+                        sysfd = open(sysfs_mountpoint(), O_RDONLY|O_CLOEXEC);
 
                 if (!build) {
                         if (parse_env_file("/etc/os-release", NEWLINE, "PRETTY_NAME", &build, NULL) == -ENOENT)
@@ -396,11 +401,11 @@ int main(int argc, char *argv[]) {
 
                 if (!has_procfs) {
                         /* wait for /proc to become available, discarding samples */
-                        has_procfs = access("/proc/vmstat", F_OK) == 0;
+                        has_procfs = access(vmstat_path, F_OK) == 0;
                 } else if (proc) {
                         rewinddir(proc);
                 } else {
-                        proc = opendir("/proc");
+                        proc = opendir(procfs_mountpoint());
                 }
 
                 if (proc) {

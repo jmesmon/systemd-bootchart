@@ -183,7 +183,9 @@ libbootchart_la_SOURCES = \
 	src/store.c \
 	src/store.h \
 	src/svg.c \
-	src/svg.h
+	src/svg.h \
+	src/fs.c \
+	src/fs.h
 
 libbootchart_la_CFLAGS = \
 	$(AM_CFLAGS) \
